@@ -1,0 +1,655 @@
+﻿<Page
+    x:Class="ListView.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:ListView"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+    <Page.Resources>
+        <!--菜单的数据模板-->
+        <DataTemplate x:Key="DataTemplate">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="48" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+
+                <Rectangle Fill="White" 
+                           Visibility="{Binding Selected, Mode=TwoWay}" 
+                           HorizontalAlignment="Left" Width="3" Height="40" MinHeight="40"/>
+
+                <FontIcon FontFamily="{Binding FontFamily}" Glyph="{Binding Icon}" Foreground="White" 
+                          VerticalAlignment="Center" 
+                          Margin="-2,0,0,0" Width="48" Height="40" FontSize="15"/>
+
+                <TextBlock Grid.Column="1" 
+                           Text="{Binding Label}" Foreground="White" 
+                           Margin="12,0,0,0" VerticalAlignment="Center" />
+            </Grid>
+        </DataTemplate>
+        <!--ListViewItem样式定制-->
+        <Style x:Key="NavMenuItemContainerStyle" TargetType="ListViewItem">
+            <Setter Property="MinWidth" Value="{StaticResource SplitViewCompactPaneThemeLength}"/>
+            <Setter Property="Height" Value="40"/>
+            <!--minheight很重要-->
+            <Setter Property="MinHeight" Value="40"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="UseSystemFocusVisuals" Value="True" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListViewItem">
+                        <ListViewItemPresenter ContentTransitions="{TemplateBinding ContentTransitions}"
+                        Control.IsTemplateFocusTarget="True"
+                        SelectionCheckMarkVisualEnabled="False"
+                        PointerOverBackground="{ThemeResource SystemControlHighlightListLowBrush}"
+                        PointerOverForeground="{ThemeResource ListViewItemForegroundPointerOver}"
+                        SelectedBackground="Transparent"
+                        SelectedForeground="{ThemeResource SystemControlForegroundAccentBrush}"
+                        SelectedPointerOverBackground="{ThemeResource SystemControlHighlightListLowBrush}"
+                        PressedBackground="{ThemeResource SystemControlHighlightListMediumBrush}"
+                        SelectedPressedBackground="{ThemeResource SystemControlHighlightListMediumBrush}"
+                        DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+                        HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+                        ContentMargin="{TemplateBinding Padding}"/>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+        <!--标签的数据模板-->
+        <DataTemplate x:Key="DataTemplateTag">
+            <Grid Margin="0 0 0 4">
+                <Button Style="{StaticResource RoundedButton}" Height="25">
+                    <Button.Transitions>
+                        <TransitionCollection>
+                            <EntranceThemeTransition FromHorizontalOffset="60" FromVerticalOffset="0"/>
+                        </TransitionCollection>
+                    </Button.Transitions>
+                    <Button.Content>
+                        <Grid>
+                            <Viewbox>
+                                <Grid>
+                                    <Rectangle StrokeThickness="1" Stroke="#C8C9CC"
+                                               RadiusX="13" RadiusY="15">
+                                    </Rectangle>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock FontSize="15" Height="20"
+                                           Text="{Binding Tag}" Foreground="Black" 
+                                           VerticalAlignment="Center" Margin="10 3"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Viewbox>
+                        </Grid>
+                    </Button.Content>
+                </Button>
+            </Grid>
+        </DataTemplate>
+        <!--标签云item样式-->
+        <Style x:Key="TagItemContainerStyle" TargetType="ListBoxItem">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="Padding" Value="0 0 0 0" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Grid x:Name="LayoutRoot"
+                              Background="{TemplateBinding Background}"
+                              BorderThickness="{TemplateBinding BorderThickness}">
+                            <Grid.Resources>
+                                <Style x:Key="BaseContentPresenterStyle" TargetType="ContentPresenter">
+                                    <Setter Property="FontFamily" Value="XamlAutoFontFamily" />
+                                    <Setter Property="FontWeight" Value="SemiBold" />
+                                    <Setter Property="FontSize" Value="15" />
+                                    <Setter Property="TextWrapping" Value="Wrap" />
+                                    <Setter Property="LineStackingStrategy" Value="MaxHeight" />
+                                    <Setter Property="TextLineBounds" Value="Full" />
+                                    <Setter Property="OpticalMarginAlignment" Value="TrimSideBearings" />
+                                </Style>
+                                <Style x:Key="BodyContentPresenterStyle" TargetType="ContentPresenter" BasedOn="{StaticResource BaseContentPresenterStyle}">
+                                    <Setter Property="FontWeight" Value="Normal" />
+                                    <Setter Property="FontSize" Value="15" />
+                                </Style>
+                            </Grid.Resources>
+                            <VisualStateManager.VisualStateGroups>
+                                <VisualStateGroup>
+                                    <VisualState x:Name="Normal"/>
+                                    <VisualState x:Name="Disabled"/>
+                                    <VisualState x:Name="PointerOver"/>
+                                    <VisualState x:Name="Pressed"/>
+                                </VisualStateGroup>
+                            </VisualStateManager.VisualStateGroups>
+                            <ContentPresenter
+                                x:Name="ContentPresenter"
+                                Content="{TemplateBinding Content}"
+                                ContentTransitions="{TemplateBinding ContentTransitions}"
+                                ContentTemplate="{TemplateBinding ContentTemplate}"
+                                Style="{StaticResource BodyContentPresenterStyle}"
+                                TextWrapping="NoWrap"
+                                HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                Margin="{TemplateBinding Padding}" />
+                        </Grid>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Page.Resources>
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <!--汉堡菜单开关-->
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="w1">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="901"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="btn_menu.Visibility" Value="Collapsed"/>
+                        <Setter Target="RootSplitView.DisplayMode" Value="CompactInline"/>
+                        <Setter Target="RootSplitView.IsPaneOpen" Value="True"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="w2">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="0"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="btn_menu.Visibility" Value="Collapsed"/>
+                        <Setter Target="RootSplitView.DisplayMode" Value="CompactOverlay"/>
+                        <Setter Target="RootSplitView.IsPaneOpen" Value="False"/>
+                    </VisualState.Setters>
+                </VisualState>
+                <VisualState x:Name="w3">
+                    <VisualState.StateTriggers>
+                        <AdaptiveTrigger MinWindowWidth="1200"/>
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="btn_menu.Visibility" Value="Visible"/>
+                        <Setter Target="RootSplitView.DisplayMode" Value="Overlay"/>
+                        <Setter Target="RootSplitView.IsPaneOpen" Value="False"/>
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+        <SplitView x:Name="RootSplitView"
+                IsPaneOpen="False"
+                DisplayMode="CompactOverlay"
+                CompactPaneLength ="44"
+                OpenPaneLength="192">
+            <SplitView.Pane>
+                <Grid Background="#D76789">
+                    <Grid.RowDefinitions>
+                        <!--空出Button的高度-->
+                        <RowDefinition Height="44" />
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="Auto" />
+                    </Grid.RowDefinitions>
+                    <StackPanel Grid.Row="0"
+                            VerticalAlignment="Top" Canvas.ZIndex="100"  
+                                HorizontalAlignment="Left"
+                           Width="192" Margin="0 0 0 0" Orientation="Horizontal">
+                        <Button Name="PaneOpenButton" 
+                            Style="{StaticResource MyButtonStyle}"
+                            FontFamily="Segoe MDL2 Assets" Content="&#xE700;" Foreground="White"
+                            Background="{Binding BackgroundColor}" 
+                            Width="44" Height="44"
+                            VerticalAlignment="Top" Canvas.ZIndex="100" />
+                    </StackPanel>
+                    <!--一级菜单-->
+                    <ListView Name="NavMenuPrimaryListView"
+                              Grid.Row="1" VerticalAlignment="Top" 
+                              SelectionMode="None" IsItemClickEnabled="True" 
+                              ItemTemplate="{StaticResource DataTemplate}" 
+                              ItemContainerStyle="{StaticResource NavMenuItemContainerStyle}"/>
+                    <!--二级菜单-->
+                    <ListView Name="NavMenuSecondaryListView" 
+                              VerticalAlignment="Bottom" 
+                              SelectionMode="None" IsItemClickEnabled="True" 
+                              ItemTemplate="{StaticResource DataTemplate}" 
+                              ItemContainerStyle="{StaticResource NavMenuItemContainerStyle}" 
+                              BorderBrush="White" BorderThickness="0,0.2,0,0" />
+
+                    <StackPanel Grid.Row="2"
+                            VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                HorizontalAlignment="Left"
+                           Width="192" Margin="0 0 0 0" Orientation="Horizontal">
+                        <Button Name="btn_hide" 
+                            Style="{StaticResource MyButtonStyle}"
+                            FontFamily="Segoe MDL2 Assets" Content="&#xE10C;" Foreground="White" 
+                            Background="{Binding BackgroundColor}" 
+                            Width="44" Height="44"
+                            Click="btn_Hide"/>
+                        <TextBlock 
+                           Text="隐藏/显示按钮" Foreground="White"
+                           Margin="12,0,0,0" VerticalAlignment="Center"/>
+                    </StackPanel>
+                    <StackPanel Grid.Row="3"
+                                VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                HorizontalAlignment="Left"
+                           Width="192" Margin="0 0 0 0" Orientation="Horizontal">
+                        <Button Name="btn_setting" 
+                            Style="{StaticResource MyButtonStyle}"
+                            FontFamily="Segoe MDL2 Assets" Content="&#xE713;" Foreground="White" 
+                            Background="{Binding BackgroundColor}" 
+                            Width="44" Height="44" 
+                            VerticalAlignment="Bottom" Canvas.ZIndex="100" 
+                            Click="btn_setting_Click"/>
+                        <TextBlock 
+                           Text="设置" Foreground="White"
+                           Margin="12,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+                </Grid>
+            </SplitView.Pane>
+            <SplitView.Content>
+                <Grid>
+                    <WebView x:Name="webview" NavigationCompleted="webview_NavigationCompleted" NewWindowRequested="webview_NewWindowRequested"/>
+                    <Frame Name="frame"/>
+                    <Grid x:Name="grid_btns">
+                        <StackPanel VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                        HorizontalAlignment="Right"
+                                   Width="44" Margin="0 0 20 210" Background="Transparent">
+                            <Button Name="btn_menu" Click="RootSplitView_IsOpen"
+                                Style="{StaticResource RoundedButton}" Height="44">
+                                <Button.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                    </TransitionCollection>
+                                </Button.Transitions>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox>
+                                            <Grid>
+                                                <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                       RadiusX="22" RadiusY="22">
+                                                </Rectangle>
+                                                <StackPanel Orientation="Horizontal" Margin="14">
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE700;" Foreground="White" FontSize="14"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                        HorizontalAlignment="Right"
+                                   Width="44" Margin="0 0 20 160" Background="Transparent">
+                            <Button Name="btn_refresh" Click="webview_refresh"
+                                Style="{StaticResource RoundedButton}" Height="44">
+                                <Button.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                    </TransitionCollection>
+                                </Button.Transitions>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox>
+                                            <Grid>
+                                                <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                       RadiusX="22" RadiusY="22">
+                                                </Rectangle>
+                                                <StackPanel Orientation="Horizontal" Margin="14">
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE72C;" Foreground="White" FontSize="14"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                        HorizontalAlignment="Right"
+                                   Width="44" Margin="0 0 20 110" Background="Transparent">
+                            <Button Name="btn_back" Click="webview_back"
+                                Style="{StaticResource RoundedButton}" Height="44">
+                                <Button.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                    </TransitionCollection>
+                                </Button.Transitions>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox>
+                                            <Grid>
+                                                <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                       RadiusX="22" RadiusY="22">
+                                                </Rectangle>
+                                                <StackPanel Orientation="Horizontal" Margin="14">
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0C4;" Foreground="White" FontSize="14"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                    HorizontalAlignment="Right"
+                               Width="44" Margin="0 0 20 60" Orientation="Horizontal" Background="Transparent">
+                            <!--默认button样式-->
+                            <!--<Button Name="btn_full" 
+                                FontFamily="Segoe MDL2 Assets" Content="&#xE1D9;" Foreground="White" 
+                                Background="#D76789" 
+                                Width="44" Height="44"
+                                Click="webview_full" BorderBrush="White" Visibility="Visible"/>-->
+                            <Button Name="btn_full" Click="webview_full" Visibility="Visible"
+                                Style="{StaticResource RoundedButton}" Height="44">
+                                <Button.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                    </TransitionCollection>
+                                </Button.Transitions>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox>
+                                            <Grid>
+                                                <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                       RadiusX="22" RadiusY="22">
+                                                </Rectangle>
+                                                <StackPanel Orientation="Horizontal" Margin="14">
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE1D9;" Foreground="White" FontSize="14"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                            <!--默认button样式-->
+                            <!--<Button Name="btn_full2" 
+                                FontFamily="Segoe MDL2 Assets" Content="&#xE1D8;" Foreground="White" 
+                                Background="#D76789" 
+                                Width="44" Height="44"
+                                Click="webview_full" BorderBrush="White" Visibility="Collapsed"/>-->
+                            <Button Name="btn_full2" Click="webview_full" Visibility="Collapsed"
+                                Style="{StaticResource RoundedButton}" Height="44">
+                                <Button.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                    </TransitionCollection>
+                                </Button.Transitions>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox>
+                                            <Grid>
+                                                <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                       RadiusX="22" RadiusY="22">
+                                                </Rectangle>
+                                                <StackPanel Orientation="Horizontal" Margin="14">
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE1D8;" Foreground="White" FontSize="14"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                        <StackPanel x:Name="stackpanel_search" VerticalAlignment="Bottom" Canvas.ZIndex="100"  
+                                HorizontalAlignment="Right"
+                               Width="44" Margin="0 0 20 10"  Background="Transparent">
+                            <!--<Button Name="btn_search" 
+                                FontFamily="Segoe MDL2 Assets" Content="&#xE11A;" Foreground="White" 
+                                Background="#D76789" 
+                                Width="44" Height="44"
+                                Click="search_open" BorderBrush="White" Visibility="Visible"/>-->
+                            <Button Name="btn_search" Click="search_open"
+                                Style="{StaticResource RoundedButton}" Height="44">
+                                <Button.Transitions>
+                                    <TransitionCollection>
+                                        <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                    </TransitionCollection>
+                                </Button.Transitions>
+                                <Button.Content>
+                                    <Grid>
+                                        <Viewbox>
+                                            <Grid>
+                                                <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                       RadiusX="22" RadiusY="22">
+                                                </Rectangle>
+                                                <StackPanel Orientation="Horizontal" Margin="14">
+                                                    <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE11A;" Foreground="White" FontSize="14"/>
+                                                </StackPanel>
+                                            </Grid>
+                                        </Viewbox>
+                                    </Grid>
+                                </Button.Content>
+                            </Button>
+                        </StackPanel>
+                        <Grid x:Name="search" Visibility="Collapsed" Height="56"
+                                    VerticalAlignment="Bottom" HorizontalAlignment="Right"
+                                    Background="Transparent"
+                                    Canvas.ZIndex="99"
+                                     >
+                            <StackPanel Orientation="Vertical" Margin="0 0 20 10">
+                                <Grid>
+                                    <Rectangle Fill="#D76789" Height="40" Width="300" RadiusX="22" RadiusY="25"
+                                               Margin="0 0 44 0"/>
+                                    <ComboBox x:Name="search_combox" Height="44" Width="80" 
+                                              Margin="4 4 0 0"
+                                                Style="{StaticResource MyComboBox}"
+                                                SelectionChanged="search_combox_SelectionChanged">
+                                        <ComboBoxItem Content="百度" FontSize="15"/>
+                                        <ComboBoxItem Content="谷歌" FontSize="15"/>
+                                        <ComboBoxItem Content="维基" FontSize="15"/>
+                                        <ComboBoxItem Content="必应" FontSize="15"/>
+                                        <ComboBoxItem Content="P站id" FontSize="15"/>
+                                        <ComboBoxItem Content="谷歌翻译" FontSize="15"/>
+                                        <ComboBoxItem Content="知乎" FontSize="15"/>
+                                        <ComboBoxItem Content="谷歌地图" FontSize="15"/>
+                                    </ComboBox>
+                                    <TextBox x:Name="search_textbox" Height="44" Width="220" FontSize="20" 
+                                             Margin="0 0 45 0" Foreground="White"
+                                             HorizontalAlignment="Right"
+                                            Style="{StaticResource MyTextBoxStyle}"
+                                            KeyDown="TextBox_KeyDown" Padding="0 8 0 0"
+                                            PlaceholderText="按 回车键 搜索" LostFocus="search_textbox_LostFocus"/>
+                                    <StackPanel Height="44" Width="44" Background="Transparent" HorizontalAlignment="Right"/>
+                                    <!--<Button  
+                                            FontFamily="Segoe MDL2 Assets" Content="&#xE0AE;" Foreground="White" 
+                                            Background="#D76789" 
+                                            Width="44" Height="44" HorizontalAlignment="Right"
+                                            Click="search_close" BorderBrush="White"/>-->
+                                    <Button Click="search_close" HorizontalAlignment="Right"
+                                        Style="{StaticResource RoundedButton}" Height="44">
+                                        <Button.Transitions>
+                                            <TransitionCollection>
+                                                <EntranceThemeTransition FromHorizontalOffset="120" FromVerticalOffset="0"/>
+                                            </TransitionCollection>
+                                        </Button.Transitions>
+                                        <Button.Content>
+                                            <Grid>
+                                                <Viewbox>
+                                                    <Grid>
+                                                        <Rectangle StrokeThickness="1" Stroke="White" Fill="#D76789"
+                                                               RadiusX="22" RadiusY="22">
+                                                        </Rectangle>
+                                                        <StackPanel Orientation="Horizontal" Margin="14">
+                                                            <FontIcon FontFamily="Segoe MDL2 Assets" Glyph="&#xE0AE;" Foreground="White" FontSize="14"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Viewbox>
+                                            </Grid>
+                                        </Button.Content>
+                                    </Button>
+                                </Grid>
+                            </StackPanel>
+                        </Grid>
+                    </Grid>
+                </Grid>
+            </SplitView.Content>
+        </SplitView>
+        <!--右侧栏-->
+        <SplitView x:Name="SettingSplitView"
+                IsPaneOpen="False"
+                DisplayMode="Overlay"
+                CompactPaneLength ="44"
+                OpenPaneLength="296" HorizontalAlignment="Right"
+                PanePlacement="Right"
+                >
+            <SplitView.Pane>
+                <Grid>
+                    <!--各种功能-->
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="32"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                            <RowDefinition Height="auto"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel Grid.Row="0" 
+                                BorderThickness="0 0 0 1" BorderBrush="#E0E0E0">
+                            <TextBlock Text="设置" Foreground="black"  FontSize="12"  
+                                   VerticalAlignment="Center" Margin="25 8 0 0"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="1"
+                        Margin="25 0 0 0" VerticalAlignment="Top">
+                            <!--user-agent-->
+                            <StackPanel Margin="0 8" Visibility="Visible">
+                                <TextBlock Text="User-Agent" Foreground="black"  FontSize="12"  
+                                   VerticalAlignment="Center"/>
+                                <Grid Margin="0 8">
+                                    <Rectangle Fill="#D76789" Height="40" Width="246" RadiusX="22" RadiusY="25" HorizontalAlignment="Left"/>
+                                    <ComboBox x:Name="combox_useragent" Margin="10 4 0 0" Width="226" 
+                                          SelectedIndex="0" Style="{StaticResource MyComboBox}"
+                                          SelectionChanged="combox_useragent_SelectionChanged" >
+                                        <ComboBoxItem Content="手机" />
+                                        <ComboBoxItem Content="PC" />
+                                    </ComboBox>
+                                </Grid>
+                            </StackPanel>
+                            <!--清除缓存-->
+                            <StackPanel Margin="0 8" Visibility="Visible">
+                                <TextBlock Text="清除缓存" Foreground="black"  FontSize="12"  
+                                   VerticalAlignment="Center"/>
+                                <Button x:Name="btn_clear" Style="{StaticResource RoundedButton}"
+                                     Height="25" FontSize="10" 
+                                     HorizontalAlignment="Right" Margin="0 0 25 0"
+                                     Click="btn_clear_ClearCache">
+                                    <Button.Content>
+                                        <Grid>
+                                            <Viewbox>
+                                                <Grid>
+                                                    <Rectangle StrokeThickness="1" Stroke="#C8C9CC"
+                                                   RadiusX="13" RadiusY="15">
+                                                    </Rectangle>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <TextBlock FontSize="15" Height="20"
+                                               Text="确定" Foreground="Black" 
+                                               VerticalAlignment="Center" Margin="10 3"/>
+                                                    </StackPanel>
+                                                </Grid>
+                                            </Viewbox>
+                                        </Grid>
+                                    </Button.Content>
+                                </Button>
+                            </StackPanel>
+                        </StackPanel>
+                        <StackPanel Grid.Row="2" 
+                                BorderThickness="0 0 0 1" BorderBrush="#E0E0E0">
+                            <TextBlock Text="工具" Foreground="black"  FontSize="12"  
+                                   VerticalAlignment="Center" Margin="25 8 0 8"/>
+                        </StackPanel>
+                        <StackPanel Grid.Row="3"
+                        Margin="25 0 0 0" VerticalAlignment="Top">
+                            <!--工具-->
+                            <StackPanel Margin="0 8" Visibility="Visible">
+                                <TextBlock Text="搜索" Foreground="black"  FontSize="12"  
+                                   VerticalAlignment="Center"/>
+                                <TextBlock Text="*暂不支持自定义搜索引擎" Foreground="#8E8E8E"  FontSize="12"  
+                                   Margin="40 -16 0 0"/>
+                                <Grid HorizontalAlignment="Left" Margin="0 5">
+                                    <Rectangle Fill="#D76789" Height="40" Width="246" RadiusX="22" RadiusY="25" HorizontalAlignment="Left"/>
+                                    <Image Source="Assets/img01.png" Height="25" Width="25" 
+                                       HorizontalAlignment="Left" Margin="10 0 0 0"/>
+                                    <TextBox x:Name="textbox_search" Margin="30 8 8 4" Height="30" MinHeight="25" 
+                                         Foreground="White" PlaceholderText="搜索"
+                                         Style="{StaticResource MyTextBoxStyle}"
+                                         Background="Transparent"
+                                         KeyDown="textbox_search_KeyDown"/>
+                                </Grid>
+                                <StackPanel Orientation="Horizontal">
+                                    <Grid>
+                                        <Rectangle Fill="#D76789" Height="30" Width="100" RadiusX="14" RadiusY="15" HorizontalAlignment="Left"/>
+                                        <ComboBox x:Name="combox_search" Height="30" Width="90" Style="{StaticResource MyComboBox}"
+                                              SelectedIndex="0" SelectionChanged="combox_search_SelectionChanged">
+                                            <ComboBoxItem Content="百度" FontSize="15"/>
+                                            <ComboBoxItem Content="谷歌" FontSize="15"/>
+                                            <ComboBoxItem Content="维基" FontSize="15"/>
+                                            <ComboBoxItem Content="必应" FontSize="15"/>
+                                            <ComboBoxItem Content="P站id" FontSize="15"/>
+                                            <ComboBoxItem Content="谷歌翻译" FontSize="15"/>
+                                            <ComboBoxItem Content="知乎" FontSize="15"/>
+                                            <ComboBoxItem Content="谷歌地图" FontSize="15"/>
+                                        </ComboBox>
+                                    </Grid>
+                                    <Button x:Name="btn_translate" Height="25" FontSize="10" 
+                                     Margin="97 0 25 0" Style="{StaticResource RoundedButton}"
+                                     Click="btn_translate_Click">
+                                        <Button.Content>
+                                            <Grid>
+                                                <Viewbox>
+                                                    <Grid>
+                                                        <Rectangle StrokeThickness="1" Stroke="#C8C9CC"
+                                                       RadiusX="13" RadiusY="15">
+                                                        </Rectangle>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <TextBlock FontSize="15" Height="20"
+                                                   Text="确定" Foreground="Black" 
+                                                   VerticalAlignment="Center" Margin="10 3"/>
+                                                        </StackPanel>
+                                                    </Grid>
+                                                </Viewbox>
+                                            </Grid>
+                                        </Button.Content>
+                                    </Button>
+                                </StackPanel>
+                                <!--搜索历史-->
+                                <TextBlock Text="搜索历史" Foreground="black"  FontSize="12"  
+                                   VerticalAlignment="Center" Margin="0 20 0 8"/>
+                                <StackPanel>
+                                    <ListBox x:Name="TagListBox"
+                                    ItemTemplate="{StaticResource DataTemplateTag}" 
+                                    ItemContainerStyle="{StaticResource TagItemContainerStyle}">
+                                        <ListBox.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <StackPanel Orientation="Vertical" HorizontalAlignment="Left"/>
+                                            </ItemsPanelTemplate>
+                                        </ListBox.ItemsPanel>
+                                    </ListBox>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Grid>
+                    <StackPanel VerticalAlignment="Bottom" Padding="0 10 0 10"
+                                Background="#F2F2F2" BorderThickness="0 1 0 0" Width="296">
+                        <Button Style="{StaticResource RoundedButton}" Height="30" HorizontalAlignment="Center"
+                                Click="ToSettingPage">
+                            <Button.Transitions>
+                                <TransitionCollection>
+                                    <EntranceThemeTransition FromHorizontalOffset="60" FromVerticalOffset="0"/>
+                                </TransitionCollection>
+                            </Button.Transitions>
+                            <Button.Content>
+                                <Grid>
+                                    <Viewbox>
+                                        <Grid>
+                                            <Rectangle StrokeThickness="1" Stroke="#C8C9CC"
+                                                       Fill="#D76789"
+                                                   RadiusX="13" RadiusY="15">
+                                            </Rectangle>
+                                            <StackPanel Orientation="Horizontal">
+                                                <TextBlock FontSize="15" Height="20"
+                                               Text="不要点我" Foreground="White" 
+                                               VerticalAlignment="Center" Margin="20 3"/>
+                                            </StackPanel>
+                                        </Grid>
+                                    </Viewbox>
+                                </Grid>
+                            </Button.Content>
+                        </Button>
+                    </StackPanel>
+                </Grid>
+            </SplitView.Pane>
+        </SplitView>
+        <local:MessageShow x:Name="messShow" VerticalAlignment="Bottom" Grid.RowSpan="2" Margin="20 76" HorizontalAlignment="Center"></local:MessageShow>
+    </Grid>
+</Page>
