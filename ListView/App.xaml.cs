@@ -19,6 +19,7 @@ using Windows.UI.Xaml.Navigation;
 
 namespace ListView
 {
+
     /// <summary>
     /// 提供特定于应用程序的行为，以补充默认的应用程序类。
     /// </summary>
@@ -42,14 +43,14 @@ namespace ListView
         /// <param name="e">有关启动请求和过程的详细信息。</param>
         protected override void OnLaunched(LaunchActivatedEventArgs e)
         {
-            if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
-            {
-                // StatusBar.GetForCurrentView().HideAsync();
-                StatusBar statusBar = StatusBar.GetForCurrentView();
-                statusBar.ForegroundColor = Colors.White;
-                statusBar.BackgroundColor = new Color() { R = 255, G = 121, B = 188, A = 255 };
-                statusBar.BackgroundOpacity = 100;
-            }
+            //if (Windows.Foundation.Metadata.ApiInformation.IsTypePresent("Windows.UI.ViewManagement.StatusBar"))
+            //{
+            //    // StatusBar.GetForCurrentView().HideAsync();
+            //    StatusBar statusBar = StatusBar.GetForCurrentView();
+            //    statusBar.ForegroundColor = Colors.White;
+            //    statusBar.BackgroundColor = new Color() { R = 255, G = 121, B = 188, A = 255 };
+            //    statusBar.BackgroundOpacity = 100;
+            //}
             //电脑标题栏颜色
             var titleBar = Windows.UI.ViewManagement.ApplicationView.GetForCurrentView().TitleBar;
             titleBar.BackgroundColor = new Color() { R = 215, G = 103, B = 137, A = 255 }; //215, 103, 137

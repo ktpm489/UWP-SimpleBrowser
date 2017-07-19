@@ -29,6 +29,7 @@ namespace ListView
     /// </summary>
     public sealed partial class MainPage : Page
     {
+
         // 为不同的菜单创建不同的List类型
         private List<NavMenuItem> navMenuPrimaryItem = new List<NavMenuItem>(
             new[]
@@ -67,6 +68,15 @@ namespace ListView
                     Label = "动漫之家",
                     Selected = Visibility.Collapsed,
                     DestUri = "http://m.dmzj.com/"
+                },
+
+                new NavMenuItem()
+                {
+                    FontFamily = new FontFamily("Segoe MDL2 Assets"),
+                    Icon = "\xE1CE",
+                    Label = "Anitama",
+                    Selected = Visibility.Collapsed,
+                    DestUri = "http://www.anitama.cn/"
                 }
 
             });
@@ -91,16 +101,18 @@ namespace ListView
             NavMenuPrimaryListView.ItemClick += NavMenuListView_ItemClick;
             NavMenuSecondaryListView.ItemClick += NavMenuListView_ItemClick;
 
-            //设置user-agent
+            //设置user-agent，先默认为Android再改为IOS
             ChangeUserAgent("Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19");
+            combox_useragent.SelectedIndex = 2; //默认为IOS
 
             // 默认页
             webview.Navigate(new Uri("http://m.bilibili.com/index.html"));
 
             //将默认页压栈
             historyStack.Add(new Uri("http://m.bilibili.com/index.html"));
+
         }
-        
+
 
         [DllImport("urlmon.dll", CharSet = CharSet.Ansi)]
         private static extern int UrlMkSetSessionOption(int dwOption, string pBuffer, int dwBufferLength, int dwReserved);
@@ -123,6 +135,8 @@ namespace ListView
             {
                 e.Handled = true;
                 currentFrame.GoBack();
+
+                frame_Navigated(null,null);     //更新是否在标题栏显示返回按钮
             }
             else
             {
@@ -196,6 +210,8 @@ namespace ListView
 
         private void NavMenuListView_ItemClick(object sender, ItemClickEventArgs e)
         {
+            webview.Stop(); //停止当前的活动（优先级最高）
+
             // 遍历，将选中Rectangle隐藏
             foreach (var np in navMenuPrimaryItem)
             {
@@ -207,8 +223,6 @@ namespace ListView
             item.Selected = Visibility.Visible;
             if (item.DestUri != null)
             {
-                webview.Stop(); //停止当前的活动
-
                 webview.Navigate(new Uri(item.DestUri));        //转入新网页地址
 
                 historyStack.Add(new Uri(item.DestUri));    //网址压栈
@@ -243,13 +257,20 @@ namespace ListView
         List<Uri> historyStack = new List<Uri>();
         private void webview_back(object sender, RoutedEventArgs e)
         {
+            webview.Stop(); //停止当前的活动
+
+            if (webview.CanGoBack)
+            {
+                webview.GoBack();
+                return;
+            }
+
             if (historyStack.Count > 1)
             {
-                webview.Stop(); //停止当前的活动
-
                 historyStack.RemoveAt(historyStack.Count - 1);
                 webview.Navigate(historyStack[historyStack.Count - 1]); //主窗口转向新页面
             }
+            
         }
 
         private void webview_NewWindowRequested(WebView sender, WebViewNewWindowRequestedEventArgs e)
@@ -271,6 +292,7 @@ namespace ListView
 
         private void webview_NavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
         {
+
             if (historyStack[historyStack.Count - 1] != args.Uri)
             {
                 historyStack.Add(args.Uri);
@@ -452,30 +474,46 @@ namespace ListView
             }
         }
 
-        private void combox_useragent_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        /// <summary>
+        /// 更改User-Agent
+        /// </summary>
+        /// <param name="useragent"></param>
+        private void ChangeUserAgent(int useragent)
         {
-            switch (combox_useragent.SelectedIndex)
+            switch (useragent)
             {
                 case 0:
                     ChangeUserAgent("Mozilla/5.0 (Linux; Android 4.1.1; Nexus 7 Build/JRO03D) AppleWebKit/535.19 (KHTML, like Gecko) Chrome/18.0.1025.166  Safari/535.19");
                     break;
                 case 1:
-                    ChangeUserAgent("Mozilla / 5.0(Windows NT 10.0; Win64; x64) AppleWebKit / 537.36(KHTML, like Gecko) Chrome / 59.0.3071.115 Safari / 537.36");
+                    ChangeUserAgent("Mozilla/5.0(Windows NT 10.0; Win64; x64) AppleWebKit/537.36(KHTML, like Gecko) Chrome/59.0.3071.115 Safari/537.36");
+                    break;
+                case 2:
+                    ChangeUserAgent("Mozilla/5.0 (iPhone; CPU iPhone OS 8_0_2 like Mac OS X) AppleWebKit/600.1.4 (KHTML, like Gecko) Version/8.0 Mobile/12A366 Safari/600.1.4");
                     break;
                 default:
                     break;
             }
         }
 
+        private void combox_useragent_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            ChangeUserAgent(combox_useragent.SelectedIndex);
+        }
+
         private void webview_refresh(object sender, RoutedEventArgs e)
         {
+            btn_refresh_Storyboard.Stop();  //btn_refresh复原
+
             webview.Refresh();
         }
 
         private void ToSettingPage(object sender, RoutedEventArgs e)
         {
             Frame currentFrame = this.Frame;
-            currentFrame.Navigate(typeof(SettingPage));
+            currentFrame.Navigate(typeof(SettingPage));         //转入SettingPage页面
+
+            //NewWindow();        //打开新窗口
 
             frame_Navigated(null,null);
 
@@ -485,5 +523,130 @@ namespace ListView
         {
             RootSplitView.IsPaneOpen = !RootSplitView.IsPaneOpen;
         }
+
+        private async void NewWindow()
+        {
+
+            messShow.Show(@"打开新窗口...", 500);
+
+            await Task.Delay(500);
+            
+            var currentAV = ApplicationView.GetForCurrentView();
+            var newAV = CoreApplication.CreateNewView();
+            await newAV.Dispatcher.RunAsync(
+            CoreDispatcherPriority.Normal,
+            async () =>
+            {
+                var newWindow = Window.Current;
+                var newAppView = ApplicationView.GetForCurrentView();
+                newAppView.Title = "新窗口";
+
+                //窗口标题栏样式 Title bar setting 
+
+                var frame2 = new Frame();
+                frame2.Navigate(typeof(MainPage), null);
+                newWindow.Content = frame2;
+                newWindow.Activate();
+
+                await ApplicationViewSwitcher.TryShowAsStandaloneAsync(
+                    newAppView.Id,
+                    ViewSizePreference.UseMinimum,
+                    currentAV.Id,
+                    ViewSizePreference.UseMinimum);
+            });
+        }
+
+        private void webview_RightTapped(object sender, RightTappedRoutedEventArgs e)
+        {
+            var tappedItem = (UIElement)e.OriginalSource;
+            var attachedFlyout = (MenuFlyout)FlyoutBase.GetAttachedFlyout(webview);
+            Point point = e.GetPosition(tappedItem);
+            attachedFlyout.ShowAt(tappedItem, point);
+        }
+
+        private void webview_Holding(object sender, HoldingRoutedEventArgs e)
+        {
+            var tappedItem = (UIElement)e.OriginalSource;
+            var attachedFlyout = (MenuFlyout)FlyoutBase.GetAttachedFlyout(webview);
+            Point point = e.GetPosition(tappedItem);
+            attachedFlyout.ShowAt(tappedItem, point);
+        }
+
+        private void MenuFresh_Click(object sender, RoutedEventArgs e)
+        {
+            webview.Stop();
+
+            webview_refresh(null,null);
+        }
+
+        private void MenuBack_Click(object sender, RoutedEventArgs e)
+        {
+            webview.Stop();
+
+            webview_back(null, null);
+        }
+
+        private void MenuOpen_Click(object sender, RoutedEventArgs e)
+        {
+            RootSplitView.IsPaneOpen = !RootSplitView.IsPaneOpen;
+        }
+
+        private void MenuNomalSize_Click(object sender, RoutedEventArgs e)
+        {
+            webview_full(null, null);
+        }
+
+        private void MenuButtonOpen_Click(object sender, RoutedEventArgs e)
+        {
+            btn_Hide(null,null);
+        }
+
+        private void MenuUA_1_Click(object sender, RoutedEventArgs e)
+        {
+            combox_useragent.SelectedIndex = 0;
+
+            ChangeUserAgent(0);
+        }
+
+        private void MenuUA_2_Click(object sender, RoutedEventArgs e)
+        {
+            combox_useragent.SelectedIndex = 1;
+
+            ChangeUserAgent(1);
+        }
+
+
+        private void MenuUA_3_Click(object sender, RoutedEventArgs e)
+        {
+            combox_useragent.SelectedIndex = 2;
+
+            ChangeUserAgent(2);
+        }
+
+        private void Data_btn_Click(object sender, RoutedEventArgs e)
+        {
+            Button str = (Button)sender;
+            textbox_search.Text = str.Content.ToString();
+
+            isAddHistory = false;
+            btn_translate_Click(null, null);
+        }
+
+        private void MenuNewWindow_Click(object sender, RoutedEventArgs e)
+        {
+            NewWindow();
+        }
+
+        private void webview_ContentLoading(WebView sender, WebViewContentLoadingEventArgs args)
+        {
+            btn_refresh_Storyboard.Stop();
+            btn_refresh_Storyboard.Begin();
+        }
+
+        private void webview_LoadCompleted(object sender, NavigationEventArgs e)
+        {
+            btn_refresh_Storyboard.Stop();
+        }
+
     }
 }
